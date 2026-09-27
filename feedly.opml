@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<opml version="1.0">
+    <head>
+        <title>Manoj subscriptions in feedly Cloud</title>
+    </head>
+    <body>
+        <outline text="Indian Architecture" title="Indian Architecture">
+            <outline type="rss" text="Architectural Digest India" title="Architectural Digest India" xmlUrl="https://www.architecturaldigest.in/feed/rss" htmlUrl="https://www.architecturaldigest.in"/>
+        </outline>
+        <outline text="Architecture" title="Architecture">
+            <outline type="rss" text="Architectural Digest" title="Architectural Digest" xmlUrl="http://www.architecturaldigest.com/rss" htmlUrl="https://www.architecturaldigest.com"/>
+            <outline type="rss" text="Procrastinators Revolt!" title="Procrastinators Revolt!" xmlUrl="http://www.thomthom.net/thoughts/feed/" htmlUrl="https://www.thomthom.net/thoughts"/>
+            <outline type="rss" text="Featured Projects" title="Featured Projects" xmlUrl="http://feeds.feedburner.com/behance/vorr" htmlUrl="http://www.behance.net"/>
+            <outline type="rss" text="AutoCAD Blog" title="AutoCAD Blog" xmlUrl="http://blogs.autodesk.com/autocad/feed/" htmlUrl="https://www.autodesk.com/blogs/autocad/"/>
+            <outline type="rss" text="Archinect - News" title="Archinect - News" xmlUrl="http://archinect.com/news.xml" htmlUrl="https://archinect.com/"/>
+            <outline type="rss" text="Trimble SketchUp" title="Trimble SketchUp" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UC50lv4EYY1N1_-B495meX8w" htmlUrl="https://www.youtube.com/channel/UC50lv4EYY1N1_-B495meX8w"/>
+            <outline type="rss" text="Interior Design Ideas" title="Interior Design Ideas" xmlUrl="http://www.home-designing.com/feed" htmlUrl="https://www.home-designing.com"/>
+            <outline type="rss" text="Autodesk" title="Autodesk" xmlUrl="https://www.youtube.com/feeds/videos.xml?channel_id=UCRnX4Yc585eRTj4UvNkBM8w" htmlUrl="https://www.youtube.com/channel/UCRnX4Yc585eRTj4UvNkBM8w"/>
+            <outline type="rss" text="Construction Week Online" title="Construction Week Online" xmlUrl="https://www.constructionweekonline.com/feed" htmlUrl="https://www.constructionweekonline.com"/>
+            <outline type="rss" text="Life of an Architect" title="Life of an Architect" xmlUrl="http://www.lifeofanarchitect.com/feed/" htmlUrl="https://www.lifeofanarchitect.com"/>
+            <outline type="rss" text="Dynamo BIM" title="Dynamo BIM" xmlUrl="http://dynamobim.org/feed/" htmlUrl="https://dynamobim.org/"/>
+        </outline>
+        <outline text="Creativity" title="Creativity">
+            <outline type="rss" text="Featured Projects" title="Featured Projects" xmlUrl="http://feeds.feedburner.com/behance/vorr" htmlUrl="http://www.behance.net"/>
+        </outline>
+    </body>
+</opml>
