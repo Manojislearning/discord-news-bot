@@ -1,6 +1,6 @@
+import asyncio
 import json
 import os
-import random
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -17,7 +17,6 @@ CHANNEL_ID = int(os.getenv("CHANNEL_ID", "0"))
 OPML_FILE = os.getenv("OPML_FILE", "feedly.opml")
 
 SEEN_FILE = Path("seen_links.json")
-MAX_AUTO_POSTS = 10
 
 
 def load_seen_links():
@@ -66,11 +65,14 @@ def get_all_articles():
             if not link:
                 continue
 
+            published = entry.get("published_parsed") or entry.get("updated_parsed")
+
             articles.append(
                 {
                     "title": title,
                     "link": link,
                     "source": source,
+                    "published": published,
                 }
             )
 
@@ -79,7 +81,15 @@ def get_all_articles():
     for article in articles:
         unique[article["link"]] = article
 
-    return list(unique.values())
+    articles = list(unique.values())
+
+    # Put newest articles first when feeds provide a date.
+    articles.sort(
+        key=lambda article: article["published"] or (0, 0, 0, 0, 0, 0, 0, 0, 0),
+        reverse=True,
+    )
+
+    return articles
 
 
 class NewsBot(discord.Client):
@@ -92,8 +102,8 @@ bot = NewsBot(intents=intents)
 tree = app_commands.CommandTree(bot)
 
 
-@tree.command(name="randomnews", description="Get one random article from the RSS feeds")
-async def randomnews(interaction: discord.Interaction):
+@tree.command(name="news", description="Get one latest RSS news article")
+async def news(interaction: discord.Interaction):
     await interaction.response.defer()
 
     try:
@@ -111,40 +121,13 @@ async def randomnews(interaction: discord.Interaction):
         await interaction.followup.send("No articles found.")
         return
 
-    article = random.choice(articles)
+    article = articles[0]
 
     await interaction.followup.send(
         f"📰 **{article['title']}**\n"
         f"Source: {article['source']}\n"
         f"{article['link']}"
     )
-
-
-@tree.command(name="news", description="Get the latest available RSS articles")
-async def news(interaction: discord.Interaction):
-    await interaction.response.defer()
-
-    try:
-        articles = get_all_articles()[:10]
-    except FileNotFoundError:
-        await interaction.followup.send(
-            f"Could not find {OPML_FILE}. Put your Feedly OPML export beside bot.py."
-        )
-        return
-    except Exception as exc:
-        await interaction.followup.send(f"Could not read RSS feeds: {exc}")
-        return
-
-    if not articles:
-        await interaction.followup.send("No articles found.")
-        return
-
-    for article in articles:
-        await interaction.followup.send(
-            f"📰 **{article['title']}**\n"
-            f"Source: {article['source']}\n"
-            f"{article['link']}"
-        )
 
 
 @tasks.loop(minutes=30)
@@ -168,23 +151,29 @@ async def news_loop():
         return
 
     new_articles = [a for a in articles if a["link"] not in seen_links]
-    new_articles = new_articles[:MAX_AUTO_POSTS]
 
-    for article in new_articles:
-        await channel.send(
-            f"📰 **{article['title']}**\n"
-            f"Source: {article['source']}\n"
-            f"{article['link']}"
-        )
-        seen_links.add(article["link"])
+    if not new_articles:
+        print("No new articles found.")
+        return
 
-    if new_articles:
-        save_seen_links(seen_links)
+    # Post exactly one new article each 30-minute cycle.
+    article = new_articles[0]
+
+    await channel.send(
+        f"📰 **{article['title']}**\n"
+        f"Source: {article['source']}\n"
+        f"{article['link']}"
+    )
+
+    seen_links.add(article["link"])
+    save_seen_links(seen_links)
 
 
 @news_loop.before_loop
 async def before_news_loop():
     await bot.wait_until_ready()
+    # Wait 30 minutes before the first automatic post.
+    await asyncio.sleep(1800)
 
 
 @bot.event
@@ -197,7 +186,7 @@ async def on_ready():
 
 if not TOKEN:
     raise RuntimeError(
-        "DISCORD_TOKEN is missing. Create a .env file from .env.example and add your token."
+        "DISCORD_TOKEN is missing. Create a .env file and add your token."
     )
 
 bot.run(TOKEN)
