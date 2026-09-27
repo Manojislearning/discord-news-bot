@@ -13,7 +13,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
-CHANNEL_ID = int(os.getenv("CHANNEL_ID", "0"))
+CHANNEL_ID_RAW = os.getenv("CHANNEL_ID", "0").strip()
+if not CHANNEL_ID_RAW.isdigit():
+    raise RuntimeError("CHANNEL_ID must contain only the numeric Discord channel ID.")
+CHANNEL_ID = int(CHANNEL_ID_RAW)
 OPML_FILE = os.getenv("OPML_FILE", "feedly.opml")
 
 SEEN_FILE = Path("seen_links.json")
