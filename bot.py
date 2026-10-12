@@ -140,6 +140,115 @@ async def news(interaction: discord.Interaction):
     )
 
 
+
+# One short hi test at a time per server (12 sends, 5 seconds apart).
+HI_TEST_INTERVAL = 5
+HI_TEST_MAX_MESSAGES = 12
+hi_test_tasks: dict[int, asyncio.Task] = {}
+
+
+async def _run_hi_test(guild_id: int, channel: discord.TextChannel):
+    try:
+        for index in range(HI_TEST_MAX_MESSAGES):
+            await channel.send("hi", allowed_mentions=discord.AllowedMentions.none())
+            if index < HI_TEST_MAX_MESSAGES - 1:
+                await asyncio.sleep(HI_TEST_INTERVAL)
+    except discord.HTTPException as exc:
+        print(f"Hi test stopped in channel {channel.id}: {exc}")
+    finally:
+        if hi_test_tasks.get(guild_id) is asyncio.current_task():
+            hi_test_tasks.pop(guild_id, None)
+
+
+@tree.command(
+    name="hi-start",
+    description="Send a short hi test every 5 seconds in a chosen channel",
+)
+@app_commands.guild_only()
+@app_commands.default_permissions(manage_guild=True)
+@app_commands.describe(channel="The server text channel to test")
+async def hi_start(interaction: discord.Interaction, channel: discord.TextChannel):
+    guild = interaction.guild
+    if guild is None or not isinstance(interaction.user, discord.Member):
+        await interaction.response.send_message("Run this in a server.", ephemeral=True)
+        return
+
+    if not interaction.user.guild_permissions.manage_guild:
+        await interaction.response.send_message(
+            "You need Manage Server permission to start a hi test.",
+            ephemeral=True,
+        )
+        return
+
+    if channel.guild.id != guild.id:
+        await interaction.response.send_message(
+            "Choose a text channel in this server.", ephemeral=True
+        )
+        return
+
+    running = hi_test_tasks.get(guild.id)
+    if running is not None and not running.done():
+        await interaction.response.send_message(
+            "A hi test is already running here. Use /hi-stop first.",
+            ephemeral=True,
+        )
+        return
+
+    try:
+        me = guild.me or await guild.fetch_member(bot.user.id)
+    except discord.HTTPException:
+        await interaction.response.send_message(
+            "Could not check the bot's channel permissions.", ephemeral=True
+        )
+        return
+    perms = channel.permissions_for(me)
+    if not (perms.view_channel and perms.send_messages):
+        await interaction.response.send_message(
+            f"I need View Channel and Send Messages permissions in {channel.mention}.",
+            ephemeral=True,
+        )
+        return
+
+    await interaction.response.send_message(
+        f"Starting a bounded test in {channel.mention}: "
+        f"{HI_TEST_MAX_MESSAGES} 'hi' messages, {HI_TEST_INTERVAL} seconds apart. "
+        "Use /hi-stop to stop early.",
+        ephemeral=True,
+    )
+    hi_test_tasks[guild.id] = asyncio.create_task(
+        _run_hi_test(guild.id, channel)
+    )
+
+
+@tree.command(name="hi-stop", description="Stop the active hi test")
+@app_commands.guild_only()
+@app_commands.default_permissions(manage_guild=True)
+async def hi_stop(interaction: discord.Interaction):
+    guild = interaction.guild
+    if guild is None or not isinstance(interaction.user, discord.Member):
+        await interaction.response.send_message("Run this in a server.", ephemeral=True)
+        return
+
+    if not interaction.user.guild_permissions.manage_guild:
+        await interaction.response.send_message(
+            "You need Manage Server permission to stop a hi test.",
+            ephemeral=True,
+        )
+        return
+
+    running = hi_test_tasks.pop(guild.id, None)
+    if running is None or running.done():
+        await interaction.response.send_message(
+            "No hi test is running.", ephemeral=True
+        )
+        return
+
+    running.cancel()
+    await interaction.response.send_message(
+        "Hi test stopped.", ephemeral=True
+    )
+
+
 @tree.command(
     name="monitor",
     description="Monitor your messages in one text channel",
