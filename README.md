@@ -40,3 +40,17 @@ A Discord bot that reads RSS feeds exported from Feedly as OPML.
 ## Important
 
 Never commit your real `.env` file or Discord bot token to GitHub.
+
+## Channel hi test
+
+A server manager can run `/hi-start channel:#your-test-channel` to send
+`hi` every **5 seconds**, starting immediately. The test is bounded to
+**12 messages** (about one minute), and only one test can run per server.
+
+Use `/hi-stop` to cancel it early. The bot requires **View Channel** and
+**Send Messages** permissions in the selected channel. These slash commands
+only work while `bot.py` is running as a connected Discord bot, not from
+the one-shot GitHub Actions `send-hi.yml` workflow.
+
+Run this only in channels designated for bot testing; do not use it to spam
+server members or maintain artificial activity.
