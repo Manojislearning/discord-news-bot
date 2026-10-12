@@ -141,8 +141,8 @@ async def news(interaction: discord.Interaction):
 
 
 
-# One short hi test at a time per server (12 sends, 5 seconds apart).
-HI_TEST_INTERVAL = 5
+# One short hi test at a time per server (12 sends, 3 seconds apart).
+HI_TEST_INTERVAL = 3
 HI_TEST_MAX_MESSAGES = 12
 hi_test_tasks: dict[int, asyncio.Task] = {}
 
@@ -162,7 +162,7 @@ async def _run_hi_test(guild_id: int, channel: discord.TextChannel):
 
 @tree.command(
     name="hi-start",
-    description="Send a short hi test every 5 seconds in a chosen channel",
+    description="Send a short hi test every 3 seconds in a chosen channel",
 )
 @app_commands.guild_only()
 @app_commands.default_permissions(manage_guild=True)
