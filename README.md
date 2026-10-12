@@ -44,8 +44,8 @@ Never commit your real `.env` file or Discord bot token to GitHub.
 ## Channel hi test
 
 A server manager can run `/hi-start channel:#your-test-channel` to send
-`hi` every **5 seconds**, starting immediately. The test is bounded to
-**12 messages** (about one minute), and only one test can run per server.
+`hi` every **3 seconds**, starting immediately. The test is bounded to
+**12 messages** (about 33 seconds), and only one test can run per server.
 
 Use `/hi-stop` to cancel it early. The bot requires **View Channel** and
 **Send Messages** permissions in the selected channel. These slash commands
