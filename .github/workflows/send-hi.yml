@@ -1,0 +1,53 @@
+name: Send hi to Discord
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  send-hi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send a single hi
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.request
+
+          token = os.environ.get("DISCORD_TOKEN", "").strip()
+          channel = os.environ.get("CHANNEL_ID", "").strip()
+          if not token:
+              sys.exit("Missing repository secret DISCORD_TOKEN")
+          if not channel.isdigit():
+              sys.exit("Missing or invalid repository secret CHANNEL_ID")
+
+          url = f"https://discord.com/api/v10/channels/{channel}/messages"
+          payload = json.dumps({
+              "content": "hi",
+              "allowed_mentions": {"parse": []}
+          }).encode("utf-8")
+          request = urllib.request.Request(
+              url,
+              data=payload,
+              headers={
+                  "Authorization": f"Bot {token}",
+                  "Content-Type": "application/json",
+                  "User-Agent": "DiscordHiGitHubAction (github.com/Manojislearning/discord-news-bot, 1.0)"
+              },
+              method="POST"
+          )
+          try:
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  data = json.load(response)
+                  print(f"Sent hi to channel {channel}; message ID: {data['id']}")
+          except urllib.error.HTTPError as error:
+              sys.exit(f"Discord returned HTTP {error.code}. Check bot permissions and credentials.")
+          PY
